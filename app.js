@@ -1,26 +1,20 @@
 let cardsData = [];
 let selectedNumbers = [];
-let cardCount = parseInt(localStorage.getItem("cardCount")||"1");
-let slotCards = Array(4).fill(null);
 
-const cardCountSelect = document.getElementById("cardCount");
-cardCountSelect.value = cardCount;
+// 4 independent slots
+let slotCards = [null, null, null, null];
 
-fetch("bingo_cards.json").then(r=>r.json()).then(data=>{
-  cardsData = data;
-  render();
-});
-
-cardCountSelect.onchange = e=>{
-  cardCount = parseInt(e.target.value);
-  localStorage.setItem("cardCount",cardCount);
-  render();
-};
+fetch("bingo_cards.json")
+  .then(r => r.json())
+  .then(data => {
+    cardsData = data;
+    render();
+  });
 
 function toggle(num){
   if(!num) return;
   if(selectedNumbers.includes(num)){
-    selectedNumbers = selectedNumbers.filter(n=>n!==num);
+    selectedNumbers = selectedNumbers.filter(n => n !== num);
   } else {
     selectedNumbers.push(num);
   }
@@ -29,28 +23,28 @@ function toggle(num){
 
 function render(){
   const container = document.getElementById("cards");
-  container.innerHTML="";
-  container.style.display="grid";
-  container.style.gridTemplateColumns = cardCount<=2?`repeat(${cardCount},1fr)`:"repeat(2,1fr)";
+  container.innerHTML = "";
 
-  for(let i=0;i<cardCount;i++){
-    const slot=document.createElement("div");
-    slot.className="cardSlot";
+  for(let i = 0; i < 4; i++){
+    const slot = document.createElement("div");
+    slot.className = "cardSlot";
 
-    const row=document.createElement("div");
-    row.style.display="flex";
-    row.style.gap="6px";
+    // Picker row
+    const row = document.createElement("div");
+    row.className = "row";
 
-    const input=document.createElement("input");
-    input.type="number";
-    input.placeholder="Card #";
+    const btn = document.createElement("button");
+    btn.textContent = "▶";
 
-    const btn=document.createElement("button");
-    btn.textContent="▶";
-    btn.onclick=()=>{
-      const n=parseInt(input.value);
-      if(n>=1 && n<=cardsData.length){
-        slotCards[i]=cardsData[n-1];
+    const input = document.createElement("input");
+    input.type = "number";
+    input.placeholder = "Card #";
+    input.style.flex = "1";
+
+    btn.onclick = () => {
+      const n = parseInt(input.value);
+      if(n >= 1 && n <= cardsData.length){
+        slotCards[i] = cardsData[n - 1];
         render();
       }
     };
@@ -58,21 +52,28 @@ function render(){
     row.appendChild(btn);
     row.appendChild(input);
 
-    const grid=document.createElement("div");
-    grid.className="grid";
+    // Grid
+    const grid = document.createElement("div");
+    grid.className = "grid";
 
     const card = slotCards[i]?.numbers?.flat() || Array(25).fill("");
-    card.forEach((num,idx)=>{
-      const cell=document.createElement("div");
-      cell.className="cell";
-      if(idx===12){ 
-        cell.textContent="FREE"; 
-        cell.classList.add("free"); 
+
+    card.forEach((num, idx) => {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+
+      if(idx === 12){
+        cell.textContent = "FREE";
+        cell.classList.add("free");
       } else {
-        cell.textContent=num||""; 
+        cell.textContent = num || "";
       }
-      if(selectedNumbers.includes(num)) cell.classList.add("selected");
-      cell.onclick=()=>toggle(num);
+
+      if(selectedNumbers.includes(num)){
+        cell.classList.add("selected");
+      }
+
+      cell.onclick = () => toggle(num);
       grid.appendChild(cell);
     });
 
